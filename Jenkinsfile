@@ -1,12 +1,33 @@
 node {
+    def app
 
-    checkout scm
-    echo "hello"
-    docker.withRegistry('https://hub.docker.com/repository/docker", 'dockerHub') {
+    stage('Clone repository') {
+        /* Cloning the Repository to our Workspace */
 
-        def customImage = docker.build("avinashraut/helloapp")
+        checkout scm
+    }
 
-        /* Push the container to the custom Registry */
-        customImage.push()
+    stage('Build image') {
+        /* This builds the actual image */
+
+        app = docker.build("avinashraut/helloapp")
+    }
+
+    stage('Test image') {
+        
+        app.inside {
+            echo "Tests passed"
+        }
+    }
+
+    stage('Push image') {
+        /* 
+			You would need to first register with DockerHub before you can push images to your account
+		*/
+        docker.withRegistry('https://registry.hub.docker.com', 'dockerHub') {
+            app.push("${env.BUILD_NUMBER}")
+            app.push("latest")
+            } 
+                echo "Trying to Push Docker Build to DockerHub"
     }
 }
