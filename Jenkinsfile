@@ -1,13 +1,12 @@
-node('jenkins-slave') {
-    checkout scm
-    stage('test pipeline') {
-        sh(script: """
-            echo "hello"
+node {
 
-            git clone https://github.com/avivamp/helloapp.git
-            cd ./helloapp
-            docker build . -t avinashraut/helloapp
-        """)
+    checkout scm
+
+    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+
+        def customImage = docker.build("avinashraut/helloapp")
+
+        /* Push the container to the custom Registry */
+        customImage.push()
     }
-    
 }
